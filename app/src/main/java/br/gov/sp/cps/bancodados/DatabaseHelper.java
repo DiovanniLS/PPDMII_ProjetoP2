@@ -14,17 +14,25 @@
         public static final String DATABASE_NAME = "dados.db";
         public static final String TABLE_NAME = "usuarios";
         public static final String COL_1 = "ID";
-        public static final String COL_2 = "EMAIL";
-        public static final String COL_3 = "SENHA";
+
+        public static final String COL_2 = "NOME";
+        public static final String COL_3 = "EMAIL";
+        public static final String COL_4 = "SENHA";
 
         public DatabaseHelper(Context context){
-            super(context, DATABASE_NAME, null, 1);
+            super(context, DATABASE_NAME, null, 4);
         }
 
         @Override
         public void onCreate(SQLiteDatabase db){
-            db.execSQL("CREATE TABLE " + TABLE_NAME +
-                    " (ID INTEGER PRIMARY KEY AUTOINCREMENT, EMAIL TEXT UNIQUE, SENHA TEXT)");
+            db.execSQL("CREATE TABLE " + TABLE_NAME + " (" +
+                    "ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "NOME TEXT,"+
+                    "EMAIL TEXT UNIQUE, " +
+                    "SENHA TEXT, " +
+                    "ALTURA REAL, " +
+                    "PESO REAL, " +
+                    "IDADE INTEGER)");
         }
 
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
@@ -32,37 +40,20 @@
             onCreate(db);
         }
 
-        // METODO GRAVAR:
-        public boolean inserirDados(String nome, int idade){
-            // Obter o DB no modo escrita:
-            SQLiteDatabase db = this.getWritableDatabase();
-
-            // Armazena os valores para serem inseridos:
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(COL_2, nome);
-            contentValues.put(COL_3, idade);
-
-            // Insere os dados e armezena o resultado na tabela:
-            long resultado = db.insert(TABLE_NAME, null, contentValues);
-
-            // Fecha o DB:
-            db.close();
-
-            // Retorna true se a inserção foi bem-sucedida:
-            return resultado != -1;
-        }
-
-        public boolean cadastrarUsuario(String email, String senha){
+        public boolean cadastrarUsuario(String nome,String email, String senha, double altura, double peso, int idade){
             SQLiteDatabase db = this.getWritableDatabase();
 
             ContentValues values = new ContentValues();
-            values.put(COL_2, email);
-            values.put(COL_3, senha);
+            values.put(COL_2, nome);
+            values.put(COL_3, email);
+            values.put(COL_4, hashSenha(senha));
+            values.put("ALTURA", altura);
+            values.put("PESO", peso);
+            values.put("IDADE", idade);
 
             long resultado = db.insert(TABLE_NAME, null, values);
 
             db.close();
-
             return resultado != -1;
         }
 
@@ -84,9 +75,11 @@
         public boolean validarLogin(String email, String senha){
             SQLiteDatabase db = this.getReadableDatabase();
 
+            String senhaHash = hashSenha(senha);
+
             Cursor cursor = db.rawQuery(
                     "SELECT * FROM " + TABLE_NAME + " WHERE EMAIL=? AND SENHA=?",
-                    new String[]{email, senha}
+                    new String[]{email, senhaHash}
             );
 
             boolean loginValido = cursor.moveToFirst();
@@ -111,6 +104,15 @@
             }
         }
 
+
+        public Cursor buscarUsuario(String email){
+            SQLiteDatabase db = this.getReadableDatabase();
+
+            return db.rawQuery(
+                    "SELECT * FROM " + TABLE_NAME + " WHERE EMAIL=?",
+                    new String[]{email}
+            );
+        }
 
 
     }

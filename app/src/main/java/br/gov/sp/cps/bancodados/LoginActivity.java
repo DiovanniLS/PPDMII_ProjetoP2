@@ -28,18 +28,24 @@ public class LoginActivity extends AppCompatActivity {
         btnIrCadastro = findViewById(R.id.btnIrCadastro);
 
         btnLogin.setOnClickListener(v -> {
-            String email = textEmail.getText().toString();
-            String senha = textSenha.getText().toString();
+            String email = textEmail.getText().toString().trim();
+            String senha = textSenha.getText().toString().trim();
 
             if(email.isEmpty() || senha.isEmpty()){
                 Toast.makeText(this, "Preencha todos os campos", Toast.LENGTH_LONG).show();
                 return;
             }
 
+            // 🔐 valida UMA vez só
             if(dbHelper.validarLogin(email, senha)){
                 Toast.makeText(this, "Login realizado!", Toast.LENGTH_LONG).show();
 
-                // 👉 Aqui você pode abrir outra tela (Home futuramente)
+                // 🚀 vai pra tela do IMC
+                Intent intent = new Intent(this, ImcActivity.class);
+                intent.putExtra("EMAIL", email);
+                startActivity(intent);
+                finish();
+
             } else {
                 Toast.makeText(this, "Email ou senha inválidos", Toast.LENGTH_LONG).show();
             }
